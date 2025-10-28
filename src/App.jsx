@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
-const STORAGE_USER_KEY = 'wot-onslaught-user' // stores { name: string, dates: ["YYYY-MM-DD"] }
-const API_URL = (import.meta && import.meta.env && import.meta.env.VITE_API_URL) || 'http://localhost:4000'
+const STORAGE_USER_KEY = 'wot-onslaught-user'
+const API_URL = 'http://81.165.138.193:4000'
 
 async function fetchVotesFromApi() {
   try {

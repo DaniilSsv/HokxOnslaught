@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
 const STORAGE_USER_KEY = 'wot-onslaught-user'
-const API_URL = 'http://81.165.138.193:4000'
+const API_URL = process.env.VITE_API_PATH || 'http://81.165.138.193:4000'
 
 async function fetchVotesFromApi() {
   try {

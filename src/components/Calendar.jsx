@@ -23,10 +23,12 @@ export default function Calendar({ votes, selection, toggleDate, currentMonth, p
           const names = votes[dateStr] || []
           const cnt = names.length
           const isSelected = selection.includes(dateStr)
+          // popularity classes: >=15 -> very-popular, >=7 -> popular
+          const popularityClass = cnt >= 15 ? 'very-popular' : (cnt >= 7 ? 'popular' : '')
           return (
             <button
               key={dateStr}
-              className={`cell day-cell ${isSelected ? 'selected' : ''}`}
+              className={`cell day-cell ${isSelected ? 'selected' : ''} ${popularityClass}`}
               onClick={() => toggleDate(dateStr)}
               title={`${cnt} selected${cnt>0?': '+names.join(', '):''}`}
               disabled={dateStr < belgiumTodayISO()}

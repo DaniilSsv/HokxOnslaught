@@ -12,13 +12,15 @@ export default function Results({ votes }) {
         <ul className="results-list">
           {resultDates.map(d => {
             const names = votes[d] || []
+            const cnt = names.length
+            const popularityClass = cnt >= 15 ? 'very-popular' : (cnt >= 7 ? 'popular' : '')
             return (
-              <li key={d} className="result-row">
+              <li key={d} className={`result-row ${popularityClass}`}>
                 <div className="label">
                   <strong>{d}</strong>
-                  <span className="count">{names.length}</span>
+                  <span className="count">{cnt}</span>
                 </div>
-                {names.length > 0 && (
+                {cnt > 0 && (
                   <div className="names-list">{names.join(', ')}</div>
                 )}
               </li>

@@ -53,10 +53,20 @@ header p{margin:0;color:var(--muted)}
 .day-number{font-weight:600}
 .day-number{color:#fff}
 .day-count{font-size:12px;color:var(--muted);margin-top:6px}
+.day-cell.popular{background:linear-gradient(90deg, rgba(34,197,94,0.08), rgba(34,197,94,0.02));border-color:rgba(34,197,94,0.12)}
+.day-cell.very-popular{background:linear-gradient(90deg, rgba(250,204,21,0.08), rgba(250,204,21,0.02));border-color:rgba(250,204,21,0.14)}
+/* ensure selected state still takes precedence visually */
+.day-cell.selected.popular, .day-cell.selected.very-popular { background:linear-gradient(90deg,var(--accent),#06b6d4); color: white }
 .name-input{display:flex;flex-direction:column;gap:6px}
 .name-input input{padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text)}
 
 .results-list{margin:0;padding:0;list-style:none}
 .results-list .result-row{padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.02)}
 .names-list{margin-top:6px;color:var(--muted);font-size:13px}
+
+/* match popularity highlights used in calendar day cells */
+.results-list .result-row.popular{background:linear-gradient(90deg, rgba(34,197,94,0.04), rgba(34,197,94,0.01));border-radius:6px;padding:10px}
+.results-list .result-row.very-popular{background:linear-gradient(90deg, rgba(250,204,21,0.04), rgba(250,204,21,0.01));border-radius:6px;padding:10px}
+/* keep the dashed divider subtle when colored */
+.results-list .result-row.popular + .result-row.popular, .results-list .result-row.very-popular + .result-row.very-popular{border-top:1px dashed rgba(255,255,255,0.02)}
 

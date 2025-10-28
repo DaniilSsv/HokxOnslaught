@@ -1,4 +1,8 @@
 import React, { useEffect, useState } from 'react'
+import Calendar from './components/Calendar'
+import Actions from './components/Actions'
+import Results from './components/Results'
+import { belgiumTodayISO } from './lib/dateUtils'
 
 const STORAGE_USER_KEY = 'wot-onslaught-user'
 const API_URL = process.env.VITE_API_PATH || 'https://hokx-backend.vercel.app'
@@ -20,17 +24,6 @@ function loadUser() {
   } catch {
     return { name: '', dates: [] }
   }
-}
-
-function formatDateISO(d) {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
-
-function monthName(d) {
-  return d.toLocaleString(undefined, { month: 'long', year: 'numeric' })
 }
 
 export default function App() {
@@ -58,8 +51,8 @@ export default function App() {
       return
     }
     // find dates where this name appears
-    const lower = name.toLowerCase()
-    const matched = Object.keys(votes).filter(d => Array.isArray(votes[d]) && votes[d].some(n => (n || '').toLowerCase() === lower))
+    // NOTE: matching is now case-sensitive (exact match)
+    const matched = Object.keys(votes).filter(d => Array.isArray(votes[d]) && votes[d].some(n => (n || '') === name))
     setSelection(matched)
   }, [user.name, votes])
 
@@ -69,6 +62,12 @@ export default function App() {
     if (!user.name || user.name.trim() === '') {
       setMessage('Please enter your name before selecting dates.')
       setTimeout(() => setMessage(''), 2500)
+      return
+    }
+    const todayBelgium = belgiumTodayISO()
+    if (dateStr < todayBelgium) {
+      setMessage('Cannot select past dates.')
+      setTimeout(() => setMessage(''), 2000)
       return
     }
     setSelection(prev => prev.includes(dateStr) ? prev.filter(d => d !== dateStr) : [...prev, dateStr])
@@ -136,28 +135,9 @@ export default function App() {
     })
   }
 
-  // calendar helpers
-  function daysForMonth(date) {
-    const year = date.getFullYear()
-    const month = date.getMonth()
-    const first = new Date(year, month, 1)
-    const firstWeekday = first.getDay() // 0 (Sun) - 6
-    const daysInMonth = new Date(year, month + 1, 0).getDate()
-    const cells = []
-    for (let i = 0; i < firstWeekday; i++) cells.push(null)
-    for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d))
-    // pad to full weeks
-    while (cells.length % 7 !== 0) cells.push(null)
-    return cells
-  }
-
   function prevMonth() { setCurrentMonth(m => new Date(m.getFullYear(), m.getMonth() - 1, 1)) }
   function nextMonth() { setCurrentMonth(m => new Date(m.getFullYear(), m.getMonth() + 1, 1)) }
-
-  const monthCells = daysForMonth(currentMonth)
-
-  // build results list sorted by date
-  const resultDates = Object.keys(votes).sort().filter(d => Array.isArray(votes[d]) && votes[d].length > 0)
+  // build results list sorted by date is handled in Results component
 
   return (
     <div className="container">
@@ -167,76 +147,23 @@ export default function App() {
       </header>
 
       <section className="voting">
-        <div className="calendar">
-          <div className="calendar-header">
-            <button className="nav" onClick={prevMonth} aria-label="Previous month">‹</button>
-            <div className="month-title">{monthName(currentMonth)}</div>
-            <button className="nav" onClick={nextMonth} aria-label="Next month">›</button>
-          </div>
+        <Calendar
+          votes={votes}
+          selection={selection}
+          toggleDate={toggleDate}
+          currentMonth={currentMonth}
+          prevMonth={prevMonth}
+          nextMonth={nextMonth}
+        />
 
-          <div className="weekday-row">
-            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(w => <div key={w} className="weekday">{w}</div>)}
-          </div>
-
-          <div className="grid">
-            {monthCells.map((cell, idx) => {
-              if (!cell) return <div key={idx} className="cell empty" />
-              const dateStr = formatDateISO(cell)
-              const names = votes[dateStr] || []
-              const cnt = names.length
-              const isSelected = selection.includes(dateStr)
-              return (
-                <button
-                  key={dateStr}
-                  className={`cell day-cell ${isSelected ? 'selected' : ''}`}
-                  onClick={() => toggleDate(dateStr)}
-                  title={`${cnt} selected${cnt>0?': '+names.join(', '):''}`}
-                >
-                  <div className="day-number">{cell.getDate()}</div>
-                  <div className="day-count">{cnt > 0 ? cnt : ''}</div>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        <div className="actions">
-          <label className="name-input">Your name
-            <input value={user.name || ''} onChange={e => setUser(prev => ({ ...prev, name: e.target.value }))} placeholder="Enter your name" />
-          </label>
-          <button onClick={submit} className="primary">Submit / Update Vote</button>
-          <button onClick={removeVote} className="muted">Remove my vote</button>
-          {message && <div className="message">{message}</div>}
-        </div>
+        <Actions user={user} setUser={setUser} submit={submit} removeVote={removeVote} message={message} />
       </section>
 
-      <section className="results">
-        <h2>Current availability</h2>
-        {resultDates.length === 0 ? (
-          <p className="muted">No votes recorded yet.</p>
-        ) : (
-          <ul className="results-list">
-            {resultDates.map(d => {
-              const names = votes[d] || []
-              return (
-                <li key={d} className="result-row">
-                  <div className="label">
-                    <strong>{d}</strong>
-                    <span className="count">{names.length}</span>
-                  </div>
-                  {names.length > 0 && (
-                    <div className="names-list">{names.join(', ')}</div>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-        )}
-      </section>
+      <Results votes={votes} />
 
       <footer className="footer">
         <div className="footer-center">
-          <small>© kaljmairk</small>
+          <small>© kaljmarik</small>
         </div>
       </footer>
     </div>

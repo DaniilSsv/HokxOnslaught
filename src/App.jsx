@@ -37,13 +37,12 @@ export default function App() {
   })
 
   useEffect(() => {
-    // load votes from API on mount
     let mounted = true
     fetchVotesFromApi().then(data => { if (mounted) setVotes(data) })
     return () => { mounted = false }
   }, [])
 
-  // when user types a name or votes change, auto-select dates for that name (case-insensitive exact match)
+  //(case-insensitive exact match)
   useEffect(() => {
     const name = (user.name || '').trim()
     if (!name) {
@@ -80,7 +79,6 @@ export default function App() {
       return
     }
 
-    // call API to replace user's votes
     fetch(`${API_URL}/votes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -99,51 +97,16 @@ export default function App() {
     })
   }
 
-  function removeVote() {
-    // remove only the currently selected dates for this user
-    if (!user.name || user.name.trim() === '') {
-      setMessage('Enter your name before trying to remove a vote.')
-      setTimeout(() => setMessage(''), 2000)
-      return
-    }
-    if (!selection || selection.length === 0) {
-      setMessage('Select one or more dates to remove your vote from.')
-      setTimeout(() => setMessage(''), 2000)
-      return
-    }
-
-    fetch(`${API_URL}/votes/remove`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: user.name, dates: selection })
-    }).then(async res => {
-      if (!res.ok) throw new Error('failed')
-      const data = await fetchVotesFromApi()
-      // update local user dates (remove the removed ones)
-      const prevDates = loadUser().dates || []
-      const remaining = prevDates.filter(d => !selection.includes(d))
-      setVotes(data)
-      setSelection([])
-      setUser(prev => ({ ...prev, dates: remaining }))
-      localStorage.setItem(STORAGE_USER_KEY, JSON.stringify({ name: user.name || '', dates: remaining }))
-      setMessage('Selected dates removed from your vote (name preserved).')
-      setTimeout(() => setMessage(''), 3000)
-    }).catch(err => {
-      console.error(err)
-      setMessage('Failed to remove vote — check the server.')
-      setTimeout(() => setMessage(''), 3000)
-    })
-  }
-
   function prevMonth() { setCurrentMonth(m => new Date(m.getFullYear(), m.getMonth() - 1, 1)) }
   function nextMonth() { setCurrentMonth(m => new Date(m.getFullYear(), m.getMonth() + 1, 1)) }
-  // build results list sorted by date is handled in Results component
 
   return (
     <div className="container">
       <header>
-        <h1>World of Tanks — Onslaught: Availability Vote</h1>
+        <h1>World of Tanks — HOKX: Availability Vote</h1>
         <p>Enter your name, select the specific dates you can play, then submit.</p>
+        <p><strong>Playtime</strong>: The events will take place in the evening, usually around 20:00 CET. till 23:00 CET.</p>
+        <p>If we have enough people interested for a specific date, we’ll confirm the exact time before finalizing the schedule on Discord.</p>
       </header>
 
       <section className="voting">
@@ -156,7 +119,7 @@ export default function App() {
           nextMonth={nextMonth}
         />
 
-        <Actions user={user} setUser={setUser} submit={submit} removeVote={removeVote} message={message} />
+        <Actions user={user} setUser={setUser} submit={submit} message={message} />
       </section>
 
       <Results votes={votes} />

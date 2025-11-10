@@ -10,7 +10,7 @@ html,body,#root{height:100%}
 body{
   margin:0;
   font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
-  background:color(#071026);
+  background: var(--bg);
   color:var(--text);
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
